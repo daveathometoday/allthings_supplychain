@@ -4,13 +4,6 @@ import re
 from typing import List, Dict
 
 class DirectorySearchTool:
-    """
-    Minimal directory text search tool.
-    Usage:
-      tool = DirectorySearchTool(directory="repository_working")
-      results = tool.search("supply chain resilience", max_results=10)
-    Returns: List[Dict] each with keys: file, snippet, lineno
-    """
     def __init__(self, directory: str = "."):
         self.directory = Path(directory)
 
@@ -20,11 +13,7 @@ class DirectorySearchTool:
         except Exception:
             return ""
 
-    def search(self, query: str, max_results: int = 10, file_glob: str = "**/*.*") -> List[Dict]:
-        """
-        Very simple text search: matches lines containing all query tokens (case-insensitive).
-        Returns a list of {file, snippet, lineno} (snippet = ±1 lines around match).
-        """
+    def search(self, query: str, max_results: int = 50, file_glob: str = "**/*.*") -> List[Dict]:
         tokens = [t.lower() for t in re.findall(r"\w+", query)]
         out = []
         for p in sorted(self.directory.glob(file_glob)):
@@ -36,7 +25,6 @@ class DirectorySearchTool:
                 for i, line in enumerate(lines):
                     line_lower = line.lower()
                     if all(tok in line_lower for tok in tokens):
-                        # create a short snippet with one preceding and following line
                         start = max(0, i-1)
                         end = min(len(lines), i+2)
                         snippet = "\n".join(lines[start:end]).strip()
@@ -44,3 +32,4 @@ class DirectorySearchTool:
                         if len(out) >= max_results:
                             return out
         return out
+ 
