@@ -11,8 +11,8 @@ except Exception:
 
 # <---Libraries--->
 import os
-from crewai import Agent, Task, Crew, Process
 from local_tools.directory_search_tool import DirectorySearchTool
+from crewai import Agent, Task, Crew, Process
 
 from dotenv import load_dotenv
 
@@ -135,16 +135,39 @@ def build_crew(repository: Path) -> Crew:
     tool_researcher = DirectorySearchTool(directory = str(repository))
     agent_researcher.tools = [tool_researcher]
 
-    return Crew(agents = [agent_prompt_engineer, agent_researcher, agent_analyst],
-                tasks = [task_prompt_engineering, task_research, task_analyse],
-                process = Process.sequential,
-                verbose = True)
-                #max_execution_time = 200)
+    return Crew(
+        agents=[agent_prompt_engineer, agent_researcher, agent_analyst],
+        tasks=[task_prompt_engineering, task_research, task_analyse],
+        process=Process.sequential,
+        verbose=True,
+        max_execution_time=200,
+    )
 
 # ---- Runner ----
-def process_qna(user_query: str, repository_path: str | Path = "repository_working"):
-    repo_path = Path(repository_path)
-    crew = build_crew(repo_path)
-    result = crew.kickoff(inputs={"user_query": user_query})
+#def process_qna(user_query: str, repository_path: str | Path = "repository_working"):
+    #repo_path = Path(repository_path)
+    #crew = build_crew(repo_path)
+    #result = crew.kickoff(inputs={"user_query": user_query})
     # return the last task's raw output (same as your original intention)
+    #return result.tasks_output[-1].raw
+
+
+
+def process_qna(user_query: str, repository_path: str | Path = "repository_working"):
+    # 1) run local directory search BEFORE Crew kickoff
+    repo = Path(repository_path)
+    search_tool = DirectorySearchTool(directory=str(repo))
+    # adapt the query you pass to the search tool (for example, the prompt-engineer refined prompt)
+    raw_snippets = search_tool.search(user_query, max_results=50)  # returns list of dicts
+
+    # 2) construct crew and pass search results as inputs
+    crew = build_crew(repo)
+    # pass the user query AND the raw search snippets to the Crew as inputs
+    result = crew.kickoff(inputs={
+        "user_query": user_query,
+        "search_snippets": raw_snippets
+    })
+
+    # 3) inside your Task/Agent descriptions you can reference `search_snippets` (the crew will have it in inputs)
     return result.tasks_output[-1].raw
+ 
