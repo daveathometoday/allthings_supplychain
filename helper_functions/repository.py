@@ -19,7 +19,7 @@ load_dotenv(".env")
 DOCUMENT_EXTENSION_ALLOWED = {".doc",".docx", ".md", ".pdf", ".txt"}
 
 # <---Database--->
-repository_source = "1FpsgCX_-wVXbINFWkI3mLjyklEzMYjGw" # Link to Google Drive
+repository_source ="12Za3bW_8WRX20F359_Aq-wyMJ-ZySg6x" # Link to Google Drive
 repository_zip = Path("repository.zip") # Path of downloaded zip_folder
 repository_directory = Path("repository") # Unzipped base repository folder
 DATA_ROOT = Path("data") # Storage for per-user data
